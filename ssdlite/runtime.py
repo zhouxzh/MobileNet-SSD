@@ -4,6 +4,8 @@ import os
 import re
 from typing import TYPE_CHECKING
 
+from .config import DEFAULT_ONNX_OPSET_VERSION
+
 if TYPE_CHECKING:
     import argparse
     from torch.utils.data import DataLoader
@@ -198,8 +200,18 @@ def export_onnx_model(args, train_state, checkpoint_path: str | None = None) -> 
             verbose=False,
             input_names=["input"],
             output_names=["boxes", "scores"],
-            opset_version=11,
+            opset_version=DEFAULT_ONNX_OPSET_VERSION,
+            dynamo=False,
         )
+
+        import onnx
+
+        exported_model = onnx.load(onnx_path)
+        actual_opset = next((op.version for op in exported_model.opset_import if op.domain in {"", "ai.onnx"}), None)
+        if actual_opset != DEFAULT_ONNX_OPSET_VERSION:
+            raise RuntimeError(
+                f"ONNX 导出结果 opset={actual_opset}，不符合要求的 opset {DEFAULT_ONNX_OPSET_VERSION}。"
+            )
         print(f"ONNX 模型已导出至: {onnx_path}")
     except Exception as error:
         print(f"导出 ONNX 失败: {error}")
