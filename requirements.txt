@@ -1,0 +1,14 @@
+torch
+torchvision
+cython
+pycocotools
+numpy
+tensorboard
+timm
+scipy
+pycocotools
+matplotlib
+datasets
+onnxscript
+onnxruntime
+huggingface_hub
